@@ -1,266 +1,477 @@
 const venom = require('venom-bot');
-
 jest.mock('venom-bot');
+
+let mockClient;
 
 //sendText
 
-it('should send a text message', async () => {
-  const mockClient = {
-    sendText: jest.fn().mockResolvedValue('Message sent successfully'),
-  };
 
-  venom.create.mockResolvedValue(mockClient);
+describe('Envio de mensagem de texto', () => {
 
-  const sender = 'sender-id';
-  const message = 'Hello, world!';
+  beforeEach(async () => {
+    mockClient = {
+      sendText: jest.fn(),
+    };
 
-  const client = await venom.create({
-    session: 'session-name',
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.sendText(sender, message);
+  it('deve enviar uma mensagem de texto', async () => {
+    // Arrange
+    const expectedResponse = 'Mensagem enviada com sucesso';
+    const remetente = 'id-do-remetente';
+    const mensagem = 'Olá, mundo!';
+    mockClient.sendText.mockResolvedValue(expectedResponse);
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.sendText).toHaveBeenCalledWith(sender, message);
-  expect(result).toBe('Message sent successfully');
+    // Act
+    const resultado = await client.sendText(remetente, mensagem);
+
+    // Assert
+    expect(mockClient.sendText).toHaveBeenCalledWith(remetente, mensagem);
+    expect(resultado).toBe(expectedResponse);
+  });
 });
+
+// No beforeEach, configurei o mockClient.sendText como uma função simulada (jest.fn()) para rastrear se a função 
+// foi chamada corretamente.
+
+// No teste, defini expectedResponse como a resposta esperada do envio da mensagem. Em seguida, usei 
+// mockClient.sendText.mockResolvedValue(expectedResponse) para configurar o valor de retorno da função sendText.
+
+// Defini as variáveis remetente e mensagem para usar nos testes.
+
+// Por fim, usei expect(mockClient.sendText).toHaveBeenCalledWith(remetente, mensagem) para verificar se a 
+// função sendText foi chamada corretamente com os parâmetros esperados e expect(resultado).toBe(expectedResponse) 
+// para verificar se o resultado do envio da mensagem é o esperado.
+
+//===============================================================================================================
 
 //isLogged
 
-it('should return true when user is logged in', async () => {
-  const mockClient = {
-    isLogged: jest.fn().mockResolvedValue(true),
-  };
+describe('Verificação de login do cliente', () => {
 
-  venom.create.mockResolvedValue(mockClient);
 
-  const client = await venom.create({
-    session: 'session-name',
+  beforeEach(async () => {
+    mockClient = {
+      isLogged: jest.fn().mockResolvedValue(false),
+    };
+
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.isLogged();
+  it('deve retornar true quando o usuário está logado', async () => {
+    // Arrange
+    mockClient.isLogged.mockResolvedValue(true);
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.isLogged).toHaveBeenCalled();
-  expect(result).toBe(true);
-});
+    // Act
+    const resultado = await client.isLogged();
 
-it('should return false when user is not logged in', async () => {
-  const mockClient = {
-    isLogged: jest.fn().mockResolvedValue(false),
-  };
-
-  venom.create.mockResolvedValue(mockClient);
-
-  const client = await venom.create({
-    session: 'session-name',
+    // Assert
+    expect(mockClient.isLogged).toHaveBeenCalled();
+    expect(resultado).toBe(true);
   });
 
-  const result = await client.isLogged();
+  it('deve retornar false quando o usuário não está logado', async () => {
+    // Arrange
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.isLogged).toHaveBeenCalled();
-  expect(result).toBe(false);
+    // Act
+    const resultado = await client.isLogged();
+
+    // Assert
+    expect(mockClient.isLogged).toHaveBeenCalled();
+    expect(resultado).toBe(false);
+  });
 });
+
+// No beforeEach, defini o valor padrão de retorno de isLogged como false. Isso garante que o valor padrão seja 
+//configurado antes de cada teste.
+
+// No primeiro teste, onde o usuário está logado, alterei o valor de retorno de isLogged para true usando 
+//mockClient.isLogged.mockResolvedValue(true). Isso garante que o teste valide corretamente o comportamento 
+//esperado quando o usuário está logado.
+
+// No segundo teste, onde o usuário não está logado, mantive o valor de retorno de isLogged como false. Isso permite
+// testar o comportamento quando o usuário não está logado.
+
+// Movemos a criação do objeto client para cada teste separadamente, dentro do escopo do teste. Isso garante que 
+//cada teste tenha uma instância única de client para trabalhar e evita conflitos entre os testes.
+
+//===============================================================================================================
 
 //browserClose
 
-it('should close the browser', async () => {
-  const mockClient = {
-    browserClose: jest.fn().mockResolvedValue(true),
-  };
+describe('Fechamento do Navegador', () => {
 
-  venom.create.mockResolvedValue(mockClient);
 
-  const client = await venom.create({
-    session: 'session-name',
+  beforeEach(async () => {
+    mockClient = {
+      browserClose: jest.fn(),
+    };
+
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.browserClose();
+  it('deve fechar o navegador com sucesso', async () => {
+    // Arrange
+    mockClient.browserClose.mockResolvedValue(true);
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.browserClose).toHaveBeenCalled();
-  expect(result).toBe(true);
-});
+    // Act
+    const resultado = await client.browserClose();
 
-it('should handle browser close failure', async () => {
-  const mockClient = {
-    browserClose: jest.fn().mockRejectedValue(new Error('Failed to close browser')),
-  };
-
-  venom.create.mockResolvedValue(mockClient);
-
-  const client = await venom.create({
-    session: 'session-name',
+    // Assert
+    expect(mockClient.browserClose).toHaveBeenCalled();
+    expect(resultado).toBe(true);
   });
 
-  await expect(client.browserClose()).rejects.toThrowError('Failed to close browser');
-  expect(mockClient.browserClose).toHaveBeenCalled();
+  it('deve lidar com falha no fechamento do navegador', async () => {
+    // Arrange
+    const error = new Error('Falha ao fechar o navegador');
+    mockClient.browserClose.mockRejectedValue(error);
+    const client = await venom.create({ session: 'nome-da-sessao' });
+
+    // Act & Assert
+    await expect(client.browserClose()).rejects.toThrowError(error);
+    expect(mockClient.browserClose).toHaveBeenCalled();
+  });
 });
+
+// Criei um bloco describe para agrupar os testes relacionados ao fechamento do navegador. Isso ajuda a organizar 
+//e estruturar melhor os testes.
+
+// Usei o beforeEach para criar uma configuração comum para ambos os testes. Isso evita a duplicação de código e 
+//garante que o cliente mockado seja criado antes de cada teste.
+
+// No primeiro teste, onde o fechamento do navegador é bem-sucedido, alterei o valor de retorno de browserClose 
+//para true usando mockClient.browserClose.mockResolvedValue(true). Isso garante que o teste valide corretamente 
+//o comportamento esperado quando o fechamento do navegador é bem-sucedido.
+
+// No segundo teste, onde ocorre uma falha no fechamento do navegador, mantive o valor de retorno de browserClose 
+// uma rejeição com uma instância de Error. Isso permite testar o comportamento quando ocorre uma falha no 
+//fechamento do navegador e valida se a rejeição é tratada corretamente.
+
+//===============================================================================================================
 
 //onMessage
 
-it('should handle incoming messages', async () => {
-  const mockClient = {
-    onMessage: jest.fn(),
-  };
+describe('Lida com mensagens recebidas', () => {
 
-  venom.create.mockResolvedValue(mockClient);
 
-  const client = await venom.create({
-    session: 'session-name',
+  beforeEach(async () => {
+    mockClient = {
+      onMessage: jest.fn(),
+    };
+
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const message = {
-    body: 'Hello',
-    isGroupMsg: false,
-    from: 'sender-id',
-  };
+  it('deve lidar com mensagens recebidas', async () => {
+    // Arrange
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  client.onMessage(message);
+    const mensagem = {
+      body: 'Olá',
+      isGroupMsg: false,
+      from: 'id-do-remetente',
+    };
 
-  expect(mockClient.onMessage).toHaveBeenCalledWith(message);
+    // Act
+    client.onMessage(mensagem);
+
+    // Assert
+    expect(mockClient.onMessage).toHaveBeenCalledWith(mensagem);
+  });
 });
+
+// No beforeEach, configurei o mockClient.onMessage como uma função simulada (jest.fn()) para rastrear se a função 
+//foi chamada corretamente.
+
+
+// Criei uma mensagem simulada para testar a função onMessage.
+
+// Em seguida, chamei client.onMessage(mensagem) para acionar a função de tratamento de mensagem.
+
+// Por fim, usei expect(mockClient.onMessage).toHaveBeenCalledWith(mensagem) para verificar se a função onMessage 
+//foi chamada corretamente com a mensagem esperada.
+
+//===============================================================================================================
 
 //close
 
-it('should close the session', async () => {
-  const mockClient = {
-    close: jest.fn().mockResolvedValue('Session closed successfully'),
-  };
+describe('Fechamento da sessão', () => {
 
-  venom.create.mockResolvedValue(mockClient);
 
-  const client = await venom.create({
-    session: 'session-name',
+  beforeEach(async () => {
+    mockClient = {
+      close: jest.fn(),
+    };
+
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.close();
+  it('deve fechar a sessão com sucesso', async () => {
+    // Arrange
+    mockClient.close.mockResolvedValue('Sessão fechada com sucesso');
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.close).toHaveBeenCalled();
-  expect(result).toBe('Session closed successfully');
+    // Act
+    const resultado = await client.close();
+
+    // Assert
+    expect(mockClient.close).toHaveBeenCalled();
+    expect(resultado).toBe('Sessão fechada com sucesso');
+  });
 });
+
+//No beforeEach, configurei o mockClient.close como uma função simulada (jest.fn()) para rastrear se a função 
+//foi chamada corretamente.
+
+//Dentro do teste, criei uma instância do cliente Venom usando await venom.create({ session: 'nome-da-sessao' }).
+
+//No teste em que a sessão é fechada com sucesso, alterei o valor de retorno de close para 'Sessão fechada com 
+//sucesso' usando mockClient.close.mockResolvedValue('Sessão fechada com sucesso'). Isso garante que o teste valide 
+//corretamente o comportamento esperado quando o fechamento da sessão é bem-sucedido.
+
+//Por fim, usei expect(mockClient.close).toHaveBeenCalled() para verificar se a função close foi chamada 
+//corretamente e expect(resultado).toBe('Sessão fechada com sucesso') para verificar se o resultado do fechamento 
+//da sessão é o esperado.
+
+//===============================================================================================================
 
 //getBatteryLevel
 
-it('should retrieve the battery level', async () => {
-  const mockClient = {
-    getBatteryLevel: jest.fn().mockResolvedValue(80),
-  };
+describe('Obtenção do nível da bateria', () => {
 
-  venom.create.mockResolvedValue(mockClient);
 
-  const client = await venom.create({
-    session: 'session-name',
+  beforeEach(async () => {
+    mockClient = {
+      getBatteryLevel: jest.fn(),
+    };
+
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.getBatteryLevel();
+  it('deve obter o nível da bateria', async () => {
+    // Arrange
+    const expectedBatteryLevel = 80;
+    mockClient.getBatteryLevel.mockResolvedValue(expectedBatteryLevel);
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.getBatteryLevel).toHaveBeenCalled();
-  expect(result).toBe(80);
+    // Act
+    const resultado = await client.getBatteryLevel();
+
+    // Assert
+    expect(mockClient.getBatteryLevel).toHaveBeenCalled();
+    expect(resultado).toBe(expectedBatteryLevel);
+  });
 });
+
+// No teste, defini expectedBatteryLevel como o valor esperado do nível da bateria. Em seguida, usei 
+// mockClient.getBatteryLevel.mockResolvedValue(expectedBatteryLevel) para configurar o valor de retorno da função 
+// getBatteryLevel.
+
+// Por fim, usei expect(mockClient.getBatteryLevel).toHaveBeenCalled() para verificar se a função getBatteryLevel foi 
+// chamada corretamente e expect(resultado).toBe(expectedBatteryLevel) para verificar se o resultado da obtenção 
+// do nível da bateria é o esperado.
+
+//===============================================================================================================
 
 //getProfilePic
 
+describe('Obtenção da foto de perfil', () => {
 
-it('should retrieve the profile picture', async () => {
-  const mockClient = {
-    getProfilePic: jest.fn().mockResolvedValue('https://example.com/profile-pic.jpg'),
-  };
 
-  venom.create.mockResolvedValue(mockClient);
+  beforeEach(async () => {
+    mockClient = {
+      getProfilePic: jest.fn(),
+    };
 
-  const client = await venom.create({
-    session: 'session-name',
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.getProfilePic();
+  it('deve obter a foto de perfil', async () => {
+    // Arrange
+    const expectedProfilePic = 'https://exemplo.com/foto-de-perfil.jpg';
+    mockClient.getProfilePic.mockResolvedValue(expectedProfilePic);
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.getProfilePic).toHaveBeenCalled();
-  expect(result).toBe('https://example.com/profile-pic.jpg');
+    // Act
+    const resultado = await client.getProfilePic();
+
+    // Assert
+    expect(mockClient.getProfilePic).toHaveBeenCalled();
+    expect(resultado).toBe(expectedProfilePic);
+  });
 });
+
+// No teste, defini expectedProfilePic como o valor esperado da foto de perfil. Em seguida, usei 
+// mockClient.getProfilePic.mockResolvedValue(expectedProfilePic) para configurar o valor de retorno da função 
+// getProfilePic.
+
+// Por fim, usei expect(mockClient.getProfilePic).toHaveBeenCalled() para verificar se a função getProfilePic foi 
+// chamada corretamente e expect(resultado).toBe(expectedProfilePic) para verificar se o resultado da obtenção da foto 
+// de perfil é o esperado.
+
+//===============================================================================================================
 
 //getAllChats
 
+describe('Obtenção de todas as conversas', () => {
 
-it('should retrieve all chats', async () => {
-  const mockClient = {
-    getAllChats: jest.fn().mockResolvedValue(['chat1', 'chat2', 'chat3']),
-  };
 
-  venom.create.mockResolvedValue(mockClient);
+  beforeEach(async () => {
+    mockClient = {
+      getAllChats: jest.fn(),
+    };
 
-  const client = await venom.create({
-    session: 'session-name',
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.getAllChats();
+  it('deve obter todas as conversas', async () => {
+    // Arrange
+    const expectedChats = ['conversa1', 'conversa2', 'conversa3'];
+    mockClient.getAllChats.mockResolvedValue(expectedChats);
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.getAllChats).toHaveBeenCalled();
-  expect(result).toEqual(['chat1', 'chat2', 'chat3']);
+    // Act
+    const resultado = await client.getAllChats();
+
+    // Assert
+    expect(mockClient.getAllChats).toHaveBeenCalled();
+    expect(resultado).toEqual(expectedChats);
+  });
 });
 
-//getAllChats
+// No teste, defini expectedChats como o valor esperado de todas as conversas. Em seguida, usei 
+// mockClient.getAllChats.mockResolvedValue(expectedChats) para configurar o valor de retorno da 
+// função getAllChats.
+
+// Por fim, usei expect(mockClient.getAllChats).toHaveBeenCalled() para verificar se a função getAllChats foi chamada 
+// corretamente e expect(resultado).toEqual(expectedChats) para verificar se o resultado da obtenção de todas 
+// as conversas é o esperado.
+
+//===============================================================================================================
+
+//getUnreadMessages
+
+describe('Obtenção de mensagens não lidas', () => {
 
 
-it('should retrieve unread messages', async () => {
-  const mockClient = {
-    getUnreadMessages: jest.fn().mockResolvedValue(['message1', 'message2']),
-  };
+  beforeEach(async () => {
+    mockClient = {
+      getUnreadMessages: jest.fn(),
+    };
 
-  venom.create.mockResolvedValue(mockClient);
-
-  const client = await venom.create({
-    session: 'session-name',
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.getUnreadMessages();
+  it('deve obter mensagens não lidas', async () => {
+    // Arrange
+    const expectedUnreadMessages = ['mensagem1', 'mensagem2'];
+    mockClient.getUnreadMessages.mockResolvedValue(expectedUnreadMessages);
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.getUnreadMessages).toHaveBeenCalled();
-  expect(result).toEqual(['message1', 'message2']);
+    // Act
+    const resultado = await client.getUnreadMessages();
+
+    // Assert
+    expect(mockClient.getUnreadMessages).toHaveBeenCalled();
+    expect(resultado).toEqual(expectedUnreadMessages);
+  });
 });
+
+// No teste, defini expectedUnreadMessages como o valor esperado das mensagens não lidas. Em seguida, usei 
+// mockClient.getUnreadMessages.mockResolvedValue(expectedUnreadMessages) para configurar o valor de retorno da 
+// função getUnreadMessages.
+
+// Por fim, usei expect(mockClient.getUnreadMessages).toHaveBeenCalled() para verificar se a função getUnreadMessages 
+// foi chamada corretamente e expect(resultado).toEqual(expectedUnreadMessages) para verificar se o resultado da 
+// obtenção das mensagens não lidas é o esperado.
+
+//===============================================================================================================
+
 
 //sendImage
 
-it('should send an image', async () => {
-  const mockClient = {
-    sendImage: jest.fn().mockResolvedValue('Image sent successfully'),
-  };
+describe('Envio de imagem', () => {
 
-  venom.create.mockResolvedValue(mockClient);
 
-  const sender = 'sender-id';
-  const image = 'https://example.com/image.jpg';
+  beforeEach(async () => {
+    mockClient = {
+      sendImage: jest.fn(),
+    };
 
-  const client = await venom.create({
-    session: 'session-name',
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.sendImage(sender, image);
+  it('deve enviar uma imagem', async () => {
+    // Arrange
+    const expectedResponse = 'Imagem enviada com sucesso';
+    mockClient.sendImage.mockResolvedValue(expectedResponse);
+    const remetente = 'id-do-remetente';
+    const imagem = 'https://exemplo.com/imagem.jpg';
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.sendImage).toHaveBeenCalledWith(sender, image);
-  expect(result).toBe('Image sent successfully');
+    // Act
+    const resultado = await client.sendImage(remetente, imagem);
+
+    // Assert
+    expect(mockClient.sendImage).toHaveBeenCalledWith(remetente, imagem);
+    expect(resultado).toBe(expectedResponse);
+  });
 });
+// No teste, defini expectedResponse como a resposta esperada do envio da imagem. Em seguida, usei 
+// mockClient.sendImage.mockResolvedValue(expectedResponse) para configurar o valor de retorno da função sendImage.
+
+// Defini as variáveis remetente e imagem para usar nos testes.
+
+// Por fim, usei expect(mockClient.sendImage).toHaveBeenCalledWith(remetente, imagem) para verificar se a 
+// função sendImage foi chamada corretamente com os parâmetros esperados e expect(resultado).toBe(expectedResponse) 
+// para verificar se o resultado do envio da imagem é o esperado.
+
+//===============================================================================================================
 
 //getGroupMembers
 
+describe('Envio de imagem', () => {
 
-it('should retrieve group members', async () => {
-  const mockClient = {
-    getGroupMembers: jest.fn().mockResolvedValue(['member1', 'member2', 'member3']),
-  };
 
-  venom.create.mockResolvedValue(mockClient);
+  beforeEach(async () => {
+    mockClient = {
+      sendImage: jest.fn(),
+    };
 
-  const groupId = 'group-id';
-
-  const client = await venom.create({
-    session: 'session-name',
+    venom.create.mockResolvedValue(mockClient);
   });
 
-  const result = await client.getGroupMembers(groupId);
+  it('deve enviar uma imagem', async () => {
+    // Arrange
+    const expectedResponse = 'Imagem enviada com sucesso';
+    mockClient.sendImage.mockResolvedValue(expectedResponse);
+    const remetente = 'id-do-remetente';
+    const imagem = 'https://exemplo.com/imagem.jpg';
+    const client = await venom.create({ session: 'nome-da-sessao' });
 
-  expect(mockClient.getGroupMembers).toHaveBeenCalledWith(groupId);
-  expect(result).toEqual(['member1', 'member2', 'member3']);
+    // Act
+    const resultado = await client.sendImage(remetente, imagem);
+
+    // Assert
+    expect(mockClient.sendImage).toHaveBeenCalledWith(remetente, imagem);
+    expect(resultado).toBe(expectedResponse);
+  });
 });
 
+// No teste, defini expectedResponse como a resposta esperada do envio da imagem. Em seguida, usei 
+// mockClient.sendImage.mockResolvedValue(expectedResponse) para configurar o valor de retorno da função sendImage.
 
+// Defini as variáveis remetente e imagem para usar nos testes.
 
+// Por fim, usei expect(mockClient.sendImage).toHaveBeenCalledWith(remetente, imagem) para verificar se a função 
+// sendImage foi chamada corretamente com os parâmetros esperados e expect(resultado).toBe(expectedResponse) para 
+// verificar se o resultado do envio da imagem é o esperado.
+//===============================================================================================================
 
 

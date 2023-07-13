@@ -32,6 +32,13 @@
     "test": "jest",
     "watch": "concurrently \"tsc -w\" \"nodemon dist/index.js\""
   },
+  "jest": {
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "./teste.test.js"
+    ]
+
+  },
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
