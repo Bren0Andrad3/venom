@@ -5,7 +5,6 @@ let mockClient;
 
 //sendText
 
-
 describe('Envio de mensagem de texto', () => {
 
   beforeEach(async () => {
@@ -473,5 +472,213 @@ describe('Envio de imagem', () => {
 // sendImage foi chamada corretamente com os parâmetros esperados e expect(resultado).toBe(expectedResponse) para 
 // verificar se o resultado do envio da imagem é o esperado.
 //===============================================================================================================
+
+describe('Testes de Integração para Venom Bot', () => {
+  let mockClient;
+
+  beforeAll(() => {
+    mockClient = {
+      sendText: jest.fn(),
+      getUnreadMessages: jest.fn(),
+      close: jest.fn(),
+      onMessage: jest.fn(),
+      sendImage: jest.fn(),
+      getProfilePic: jest.fn(),
+      getAllMessagesInChat: jest.fn(), // Mock for new method
+      markAsRead: jest.fn(), // Mock for new method
+      getContacts: jest.fn(), // Mock for new method
+      sendVoice: jest.fn(), // Mock for new method
+      getContactStatus: jest.fn(), // Mock for new method
+    };
+  
+    venom.create.mockResolvedValue(mockClient);
+  });
+  
+
+  it('deve obter mensagens não lidas simuladas', async () => {
+    // Arrange
+    const fakeUnreadMessages = [
+      { from: 'remetente-1', body: 'Mensagem 1' },
+      { from: 'remetente-2', body: 'Mensagem 2' },
+    ];
+    mockClient.getUnreadMessages.mockResolvedValue(fakeUnreadMessages);
+
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    const unreadMessages = await client.getUnreadMessages();
+
+    // Assert
+    expect(mockClient.getUnreadMessages).toHaveBeenCalled();
+    expect(unreadMessages).toEqual(fakeUnreadMessages);
+  });
+
+  it('deve enviar uma mensagem de texto simulada', async () => {
+    // Arrange
+    const destinatario = 'número-do-destinatario';
+    const mensagem = 'Testando mensagem de texto simulada';
+
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    await client.sendText(destinatario, mensagem);
+
+    // Assert
+    expect(mockClient.sendText).toHaveBeenCalledWith(destinatario, mensagem);
+  });
+
+  it('deve receber e processar uma mensagem simulada', async () => {
+    // Arrange
+    const fakeMessage = {
+      from: 'número-do-remetente',
+      body: 'Mensagem simulada recebida',
+    };
+
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    const onMessageCallback = mockClient.onMessage; // Captura o callback real
+    
+    // Chama o callback para simular o processamento da mensagem
+    await onMessageCallback(fakeMessage);
+
+    // Assert
+    expect(mockClient.onMessage).toHaveBeenCalledWith(fakeMessage);
+  });
+
+  it('deve enviar uma imagem simulada', async () => {
+    // Arrange
+    const destinatario = 'número-do-destinatario';
+    const caminhoDaImagem = 'caminho-da-imagem.jpg';
+
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    await client.sendImage(destinatario, caminhoDaImagem);
+
+    // Assert
+    expect(mockClient.sendImage).toHaveBeenCalledWith(destinatario, caminhoDaImagem);
+  });
+
+  it('deve obter a imagem de perfil simulada', async () => {
+    // Arrange
+    const contato = 'número-do-contato';
+    const fakeProfilePic = 'link-para-imagem-de-perfil';
+    mockClient.getProfilePic.mockResolvedValue(fakeProfilePic);
+
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    const profilePic = await client.getProfilePic(contato);
+
+    // Assert
+    expect(mockClient.getProfilePic).toHaveBeenCalledWith(contato);
+    expect(profilePic).toBe(fakeProfilePic);
+  });
+
+  it('deve obter todas as mensagens de uma conversa', async () => {
+    // Arrange
+    const contato = 'número-do-contato';
+    const fakeMessages = [
+      { from: contato, body: 'Primeira mensagem' },
+      { from: contato, body: 'Segunda mensagem' },
+    ];
+    mockClient.getAllMessagesInChat.mockResolvedValue(fakeMessages);
+
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    const messages = await client.getAllMessagesInChat(contato);
+
+    // Assert
+    expect(mockClient.getAllMessagesInChat).toHaveBeenCalledWith(contato);
+    expect(messages).toEqual(fakeMessages);
+  });
+
+  // it('deve marcar uma mensagem como lida', async () => {
+  //   // Arrange
+  //   const messageId = 'id-da-mensagem';
+  //   mockClient.markAsRead.mockResolvedValue(true);
+
+  //   // Act
+  //   const client = await venom.create({ session: 'nome-da-sessao' });
+  //   const result = await client.markMessageAsRead(messageId);
+
+  //   // Assert
+  //   expect(mockClient.markAsRead).toHaveBeenCalledWith(messageId);
+  //   expect(result).toBe(true);
+  // });
+
+  it('deve obter a lista de contatos', async () => {
+    // Arrange
+    const fakeContacts = [
+      { id: 'contato-1', name: 'Contato 1' },
+      { id: 'contato-2', name: 'Contato 2' },
+    ];
+    mockClient.getContacts.mockResolvedValue(fakeContacts);
+
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    const contacts = await client.getContacts();
+
+    // Assert
+    expect(mockClient.getContacts).toHaveBeenCalled();
+    expect(contacts).toEqual(fakeContacts);
+  });
+
+  it('deve enviar e receber uma mensagem de texto simulada', async () => {
+    // Arrange
+    const destinatario = 'número-do-destinatario';
+    const mensagemEnviada = 'Mensagem simulada enviada';
+    const mensagemRecebida = 'Mensagem simulada recebida';
+    const remetente = 'número-do-remetente';
+    const fakeUnreadMessages = [
+      { from: remetente, body: mensagemEnviada },
+    ];
+    mockClient.getUnreadMessages.mockResolvedValue(fakeUnreadMessages);
+  
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    await client.sendText(destinatario, mensagemEnviada);
+    const unreadMessages = await client.getUnreadMessages();
+    const onMessageCallback = mockClient.onMessage; // Captura o callback real
+    await onMessageCallback({ from: destinatario, body: mensagemRecebida });
+  
+    // Assert
+    expect(mockClient.sendText).toHaveBeenCalledWith(destinatario, mensagemEnviada);
+    expect(mockClient.getUnreadMessages).toHaveBeenCalled();
+    expect(mockClient.onMessage).toHaveBeenCalledWith({ from: destinatario, body: mensagemRecebida });
+    expect(unreadMessages).toEqual(fakeUnreadMessages);
+  });
+
+  it('deve enviar uma mensagem de voz simulada', async () => {
+    // Arrange
+    const destinatario = 'número-do-destinatario';
+    const caminhoDoAudio = 'caminho-do-audio.ogg';
+
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    await client.sendVoice(destinatario, caminhoDoAudio);
+
+    // Assert
+    expect(mockClient.sendVoice).toHaveBeenCalledWith(destinatario, caminhoDoAudio);
+  });
+
+  it('deve obter o status de contato', async () => {
+    // Arrange
+    const contato = 'número-do-contato';
+    const fakeStatus = 'Online';
+    mockClient.getContactStatus.mockResolvedValue(fakeStatus);
+
+    // Act
+    const client = await venom.create({ session: 'nome-da-sessao' });
+    const status = await client.getContactStatus(contato);
+
+    // Assert
+    expect(mockClient.getContactStatus).toHaveBeenCalledWith(contato);
+    expect(status).toBe(fakeStatus);
+  });
+
+  afterAll(async () => {
+    // Limpeza: Feche a sessão simulada
+    await mockClient.close();
+  });
+
+  // Adicione mais testes de integração para outras funcionalidades
+});
 
 
